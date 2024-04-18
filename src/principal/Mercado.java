@@ -1,32 +1,47 @@
 package principal;
 
-// Importações de classes necessárias
-import modelo.Produto; // Importa a classe Produto do pacote modelo
-import utilitario.LimparConsole; // Importa a classe LimparConsole do pacote utilitario
-import utilitario.Utilitario; // Importa a classe Utilitario do pacote utilitario
+import modelo.Produto;
+import modelo.Estoque;
+import modelo.CarrinhoDeCompras;
+import utilitario.LimparConsole;
+import utilitario.Utilitario;
 
-import java.util.ArrayList; // Importa a classe ArrayList do pacote java.util
-import java.util.HashMap; // Importa a classe HashMap do pacote java.util
-import java.util.Map; // Importa a classe Map do pacote java.util
-import java.util.Scanner; // Importa a classe Scanner do pacote java.util
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Scanner;
 
-// Classe principal Mercado
 public class Mercado {
-    private static Scanner input = new Scanner(System.in); // Instância de Scanner para entrada de dados
-    private static ArrayList<Produto> produtos; // Lista de produtos
-    private static Map<Produto, Integer> carrinho; // Carrinho de compras
-    private static int proximoId = 1; // Variável para controlar o próximo ID disponível
+    private static Mercado instancia = null;
+    private static Scanner input = new Scanner(System.in);
+    private static ArrayList<Produto> produtos;
+    private static Estoque estoque;
+    private static CarrinhoDeCompras carrinho; // Substitui o mapa carrinho
+    private static int proximoId = 1;
 
-    // Método principal da aplicação
-    public static void main(String[] args) {
-        produtos = new ArrayList<>(); // Inicializa a lista de produtos
-        carrinho = new HashMap<>(); // Inicializa o carrinho de compras
-        menu(); // Chama o método menu para exibir o menu principal
+    // Construtor privado
+    private Mercado() {
+        produtos = new ArrayList<>();
+        carrinho = new CarrinhoDeCompras();
+        estoque = new Estoque();
     }
 
-    // Método para exibir o menu principal e processar as opções escolhidas pelo usuário
+    // Método estático para obter a instância única
+    public static Mercado getInstance() {
+        if (instancia == null) {
+            instancia = new Mercado();
+        }
+        return instancia;
+    }
+
+
+    public static void main(String[] args) {
+        produtos = new ArrayList<>();
+        carrinho = new CarrinhoDeCompras(); // Inicializa o carrinho de compras
+        estoque = new Estoque();
+        menu();
+    }
+
     private static void menu() {
-        // Exibe o cabeçalho do menu
         System.out.println("╔══════════════════════════════════════════════╗");
         System.out.println("║          Bem-vindo(a) a LC Tecnologia        ║");
         System.out.println("║              Loja de Informática             ║");
@@ -40,34 +55,31 @@ public class Mercado {
         System.out.println("║ 7 - Sair                                     ║");
         System.out.println("╚══════════════════════════════════════════════╝");
         System.out.print("Digite o número da opção desejada: ");
-        int opcao = input.nextInt(); // Lê a opção escolhida pelo usuário
+        int opcao = input.nextInt();
 
-        // Processa a opção escolhida
         switch (opcao) {
             case 1:
-                cadastrarProd(); // Chama o método para cadastrar produtos
+                cadastrarProd();
                 break;
             case 2:
-                listarProd(); // Chama o método para listar produtos
+                listarProd();
                 break;
             case 3:
-                editarProd(); // Chama o método para editar produtos
+                editarProd();
                 break;
             case 4:
-                removerProd(); // Chama o método para remover produtos
+                removerProd();
                 break;
             case 5:
-                comprarProd(); // Chama o método para comprar produtos
+                comprarProd();
                 break;
             case 6:
-                verCarrinho(); // Chama o método para ver o carrinho de compras
+                verCarrinho();
                 break;
             case 7:
-                // Encerra o programa
                 System.out.println("Obrigado pela preferência! Até a próxima!");
                 System.exit(0);
             default:
-                // Exibe uma mensagem de erro para opções inválidas e chama novamente o menu
                 System.out.println("Opção Inválida! Digite uma das opções listadas.");
                 menu();
                 break;
@@ -80,11 +92,15 @@ public class Mercado {
         System.out.print("Digite o nome do produto: ");
         String nome = input.next();
         System.out.print("Digite o valor do produto: ");
-        Double valor = input.nextDouble();
-        Produto produto = new Produto(nome, valor);
-        produto.setIdProd(proximoId);
+        double valor = input.nextDouble();
+        System.out.print("Digite a quantidade do produto: ");
+        int quantidade = input.nextInt(); // Nova linha para solicitar a quantidade
+
+        Produto produto = new Produto(nome, valor, quantidade); // Modificação para passar a quantidade
         produtos.add(produto);
+        estoque.adicionarProduto(produto, quantidade); // Atualiza o estoque com a quantidade cadastrada
         System.out.println(produto.getNomeProd() + " cadastrado com sucesso!");
+
         proximoId++;
 
         // Pergunta se deseja cadastrar outro produto
@@ -103,27 +119,24 @@ public class Mercado {
         }
     }
 
-    // Método para listar produtos
+
     private static void listarProd() {
-        LimparConsole.limparTela(); // Limpa a tela do console
+        LimparConsole.limparTela();
         if (produtos.size() > 0) {
-            // Exibe a lista de produtos
             System.out.println("╔═════════════Lista de Produtos═════════════╗\n");
 
             for (Produto p : produtos) {
                 System.out.println(p);
             }
         } else {
-            // Exibe uma mensagem se não houver produtos cadastrados
             System.out.println("Nenhum produto cadastrado!");
         }
 
-        menu(); // Retorna ao menu principal
+        menu();
     }
 
-    // Método para remover produtos
     private static void removerProd() {
-        LimparConsole.limparTela(); // Limpa a tela do console
+        LimparConsole.limparTela();
         if (produtos.size() > 0) {
             System.out.println("Lista de Produtos:");
 
@@ -151,12 +164,11 @@ public class Mercado {
             System.out.println("Não existem produtos cadastrados para remover.");
         }
 
-        menu(); // Retorna ao menu principal
+        menu();
     }
 
-    // Método para editar produtos
     private static void editarProd() {
-        LimparConsole.limparTela(); // Limpa a tela do console
+        LimparConsole.limparTela();
         if (produtos.size() > 0) {
             System.out.println("Lista de Produtos:");
 
@@ -175,9 +187,12 @@ public class Mercado {
                     String novoNome = input.next();
                     System.out.println("Digite o novo valor do produto: ");
                     double novoValor = input.nextDouble();
+                    System.out.println("Digite a nova quantidade do produto: ");
+                    int novaQuantidade = input.nextInt();
 
                     p.setNomeProd(novoNome);
                     p.setValor(novoValor);
+                    p.setQuantidade(novaQuantidade);
 
                     System.out.println("Produto editado com sucesso!");
                     break;
@@ -191,12 +206,11 @@ public class Mercado {
             System.out.println("Não existem produtos cadastrados para editar.");
         }
 
-        menu(); // Retorna ao menu principal
+        menu();
     }
 
-    // Método para comprar produtos
     private static void comprarProd() {
-        LimparConsole.limparTela(); // Limpa a tela do console
+        LimparConsole.limparTela();
         if (produtos.size() > 0) {
             System.out.println("╔═════════════Produtos Disponíveis═════════════╗");
             for (Produto p : produtos) {
@@ -209,33 +223,24 @@ public class Mercado {
 
             for (Produto p : produtos) {
                 if (p.getIdProd() == id) {
-                    int qtProd;
-                    try {
-                        qtProd = carrinho.get(p);
-                        carrinho.put(p, qtProd + 1);
-                    } catch (NullPointerException e) {
-                        carrinho.put(p, 1);
-                    }
-
+                    carrinho.adicionarItem(p, 1); // Adiciona 1 unidade ao carrinho
                     System.out.println(p.getNomeProd() + " adicionado ao carrinho!");
                     existe = true;
                 }
             }
 
-            // Se o produto não foi encontrado, exibe a mensagem e retorna ao menu principal
             if (!existe) {
                 System.out.println("Produto não encontrado!");
             }
 
-            // Pergunta se deseja comprar outro produto
             System.out.println("Deseja comprar outro produto?");
             System.out.print("Pressione 1 para SIM ou 0 para NÃO: ");
             int opcao = input.nextInt();
 
             if (opcao == 1) {
-                comprarProd(); // Chama o método novamente para comprar outro produto
+                comprarProd();
             } else {
-                menu(); // Retorna ao menu principal se não desejar comprar outro produto
+                menu();
             }
         } else {
             System.out.println("Não existe produtos cadastrados!");
@@ -247,9 +252,12 @@ public class Mercado {
     private static void verCarrinho() {
         LimparConsole.limparTela(); // Limpa a tela do console
         System.out.println("╔═════════════Produtos no Carrinho═════════════╗");
-        if (carrinho.size() > 0) {
-            for (Produto p : carrinho.keySet()) {
-                System.out.println("Produto: " + p + "\nQuantidade: " + carrinho.get(p));
+        if (carrinho.getItens().size() > 0) {
+            for (Map.Entry<Produto, Integer> entry : carrinho.getItens().entrySet()) {
+                Produto produto = entry.getKey();
+                int quantidade = entry.getValue();
+                double valorTotal = produto.getValor() * quantidade;
+                System.out.println("Produto: " + produto.getNomeProd() + "\nQuantidade: " + quantidade + "\nValor Unitário: " + Utilitario.doubleToString(produto.getValor()) + "\nValor Total: " + Utilitario.doubleToString(valorTotal) + "\n");
             }
 
             // Pergunta se deseja encerrar a compra
@@ -267,22 +275,32 @@ public class Mercado {
             menu();
         }
     }
-
-    // Método para encerrar a compra
     private static void encerrarCompra() {
-        LimparConsole.limparTela(); // Limpa a tela do console
-        Double valorCompra = 0.0;
+        LimparConsole.limparTela();
+        double valorCompra = carrinho.calcularTotal(); // Usa o método calcularTotal do carrinho
         System.out.println("╔═════════════Seus Itens═════════════╗");
 
-        for (Produto p : carrinho.keySet()) {
-            int qtProd = carrinho.get(p);
-            valorCompra += p.getValor() * qtProd;
-            System.out.println(p);
-            System.out.println("Quantidade: " + qtProd);
+        for (Map.Entry<Produto, Integer> entry : carrinho.getItens().entrySet()) {
+            Produto produto = entry.getKey();
+            int quantidadeVendida = entry.getValue();
+
+            int estoqueDisponivel = estoque.verificarEstoque(produto);
+            if (quantidadeVendida > estoqueDisponivel) {
+                System.out.println("Quantidade insuficiente em estoque para o produto: " + produto.getNomeProd());
+                continue;
+            }
+
+            estoque.removerProduto(produto, quantidadeVendida);
+            System.out.println("Nome: " + produto.getNomeProd());
+            System.out.println("Valor: " + Utilitario.doubleToString(produto.getValor()));
+            System.out.println("Quantidade: " + quantidadeVendida);
             System.out.println("_________________________");
+
+            int novaQuantidadeEstoque = estoqueDisponivel - quantidadeVendida;
+            estoque.setQuantidadeProduto(produto, novaQuantidadeEstoque);
         }
         System.out.println("O valor da compra é: " + Utilitario.doubleToString(valorCompra));
-        carrinho.clear();
+        carrinho.limpar(); // Limpa o carrinho após a compra
         System.out.println("Obrigado pela preferência, volte sempre!");
         menu();
     }
